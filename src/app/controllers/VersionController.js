@@ -1,10 +1,16 @@
+const versionModel = require('../models/Version');
+
 class VersionController{
     //[GET] / version
     index(req,res){
-       res.send({
-           id:'1',
-           name:'version 1',
-       });
+        versionModel.find({},function(err,versions){
+            if(!err){
+                res.json(versions);
+            }else{
+                res.status(400).json({error: 'Error'});
+
+            }
+        });
     }
 }
 module.exports = new VersionController;

@@ -7,7 +7,7 @@ const  sitesRoute = require('./site');
 function route(app){
 
     
-    app.get('/version', versionRoute)
+    app.post('/version', versionRoute)
 
     app.get('/device', deviceRoute)
 
