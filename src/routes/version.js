@@ -4,6 +4,5 @@ const versionController = require('../app/controllers/VersionController');
 
 
 //[GET] /version
-router.use('/',versionController.index);
-
+router.use('/',versionController.show);
 module.exports = router;
