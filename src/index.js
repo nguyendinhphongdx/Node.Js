@@ -6,7 +6,7 @@ const app = express()
 const port = 3000
 const route = require('./routes')
 const db = require('./config/db')
-
+const cors = require('cors')
 //HTTP Loger
 app.use(morgan('combined'))
 //Template engine
@@ -23,7 +23,9 @@ app.use(express.json());
  
 // connect db
 db.connect();
-
+ 
+// Allow front-end access api
+app.use(cors())
 // Call route
 route(app);
 
