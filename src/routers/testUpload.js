@@ -4,6 +4,7 @@ const path = require('path');
 const multer = require('multer');
 const debug  = require('debug')('server-bif:app');
 const serveIndex = require('serve-index')
+var fs = require("fs");
 // const uploadRouter = require("../app/controllers/U");
 
 const verifyToken = require("../app/helpers/tokenCheker");
