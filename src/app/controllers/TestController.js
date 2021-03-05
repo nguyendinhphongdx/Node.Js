@@ -8,7 +8,6 @@ const SaltAPI = require('../helpers/saltApi');
 const netapi  = require('../helpers/netAPI');
 const SaltHelper = require('../helpers/SaltHelper');
 
-
 class TestController {
     async test(req,res){
         const salt = new Salt({

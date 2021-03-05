@@ -4,9 +4,10 @@ const authenRouter = require("./authen");
 const versionRouter = require("./version");
 const testRouter = require("./test");
 const deviceTypeRouter = require("./devicetype");
-const testUpload = require("./testUpload");
+const testUpload = require("./upload");
 const saltstack = require("./saltstack");
 const device =   require("./device");
+const sshRouter = require("./ssh")
 const group = require("./group");
 
 function route(app) {
@@ -18,6 +19,7 @@ function route(app) {
   app.use("/saltstack",saltstack);
   app.use("/group",group);
   app.use('/version',versionRouter);
+  app.use('/ssh',sshRouter);
   // app.use('/devices',device);
   // app.use('/reports', reports);
   // app.use('/loggings',loggoings);
