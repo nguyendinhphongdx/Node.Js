@@ -7,7 +7,7 @@ const deviceTypeRouter = require("./devicetype");
 const testUpload = require("./upload");
 const saltstack = require("./saltstack");
 const device =   require("./device");
-const sshRouter = require("./ssh")
+const sshRouter = require("./sftp")
 const group = require("./group");
 
 function route(app) {

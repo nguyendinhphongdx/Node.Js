@@ -10,7 +10,4 @@ router.get('/getAll',verifyToken,versionRouter.queryAll);
 router.get('/get/:id',verifyToken,versionRouter.query);
 router.post('/delete',versionRouter.deleteVersion)
 
-
-
-
 module.exports = router;

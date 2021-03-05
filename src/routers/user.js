@@ -7,5 +7,4 @@ const verifyToken = require("../app/helpers/tokenCheker");
 router.post("/add", userRouter.create);
 router.get("/queryAll", verifyToken, userRouter.queryAll);
 
-
 module.exports = router;
