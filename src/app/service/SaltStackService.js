@@ -1,6 +1,7 @@
 const deviceTypeModel = require("../models/DeviceType");
 const { constanst } = require("../config/Constants");
 const saltApi = require("../helpers/saltApi");
+
 const axios = require("axios");
 
 class SaltStackService {
@@ -43,7 +44,7 @@ class SaltStackService {
     if (timeout) form.timeout = timeout;
     console.log("Form" + JSON.stringify(form));
     try {
-      const res = await axios.post("https://saltgui.bkav.com/api/", form, {
+      const res = await axios.post(URL, form, {
         headers: { "X-Auth-Token": token },
         contentType: "application/json",
       });

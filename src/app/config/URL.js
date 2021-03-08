@@ -1,0 +1,1 @@
+export const URL = 'https://saltgui.bkav.com:8000'

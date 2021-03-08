@@ -16,3 +16,4 @@ const category = {
     "LOGIN": "https://saltgui.bkav.com/api/login",
     "HOME":"https://saltgui.bkav.com/api/"
   }
+  const URL = 'https://saltgui.bkav.com:8000'
