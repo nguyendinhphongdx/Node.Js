@@ -5,9 +5,9 @@ let sftp = new Client();
 var Client2 = require('ssh2').Client;
 const fs = require('fs');
 const config = {
-  host: '10.2.65.35',
+  host: '10.2.65.38',
   port: 22,
-  username: 'minions',
+  username: 'minions2',
   password: '123456a@A!@#$'
   }
 
@@ -130,7 +130,7 @@ router.get('/upload',function(req, res){
     console.log(fs.existsSync(path));
     let remotePath = path;
     sftp.connect(config).then(() => {
-        return sftp.uploadDir(path,'/home/minions')
+        return sftp.uploadDir(path,'/home/minions2')
     }).then((data) => {
       console.log(data, 'the data info');
       sftp.end();
@@ -140,6 +140,7 @@ router.get('/upload',function(req, res){
       console.log(err, 'catch error');
     });
 })
+
 router.get('/executeFile',function(req,res){
   var conn = new Client2();
   const encode = 'utf8';
@@ -153,14 +154,16 @@ router.get('/executeFile',function(req,res){
       let pwSent = false;
       let su = false;
       let commands = [
-        `sudo su`,
-        `123456a@A!@#$`,
-        `sudo apt -y install salt-minion `,
-        `ifconfig`,
-        `cp minion /etc/salt/minion`,
-        `/etc/init.d/salt-minion restart`
+          `sudo su`,
+          `123456a@A!@#$`,
+          `sh setup.sh`
       ];
-    
+    //        `sudo su`,
+    // `123456a@A!@#$`,
+    // `sudo apt -y install salt-minion `,
+    // `ifconfig`,
+    // `cp minion /etc/salt/minion`,
+    // `/etc/init.d/salt-minion restart`
       conn.shell((err, stream) => {
         if (err) {
           console.log(err);
@@ -220,9 +223,9 @@ router.get('/executeFile',function(req,res){
         stream.write(command + '\n');
       });
     }).connect({
-      host: '10.2.65.35',
+      host: '10.2.65.38',
       port: 22,
-      username: 'minions',
+      username: 'minions2',
       password: '123456a@A!@#$'
     
   });
@@ -245,6 +248,21 @@ router.get('/fastput',function(req, res){
     res.json('finished')
     sftp.end();
   })
+})
+router.get('/process',function(req, res){
+
+
+exec("ls -la", (error, stdout, stderr) => {
+    if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+    }
+    console.log(`stdout: ${stdout}`);
+});
 })
 
 // router.get('/root',function(req, res){

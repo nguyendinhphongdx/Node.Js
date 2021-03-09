@@ -16,6 +16,10 @@ router.post('/netapi/kwarg',saltrouter.fullargs);
 router.get('/keys/:device',saltrouter.getKeyNameDevice);
 router.get('/minions',saltrouter.getMinions);
 router.post('/keys/all',saltrouter.funcKeys);
+router.get('/history',saltrouter.history);
+router.get('/history/:jid',saltrouter.detailHistory);
+router.post('/sendFile',saltrouter.sendFile);
+// router.post('initDevice',saltrouter.)
 // router.post('/keys/accept',saltrouter.funcAccept)
 
 
