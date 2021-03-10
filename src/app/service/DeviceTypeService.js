@@ -1,6 +1,7 @@
 const { version } = require("joi");
 const deviceTypeModel = require("../models/DeviceType");
 const versionService = require("../service/VersionService");
+require('../utils/ArrayUtils')
 class DeviceTyeService {
   //GET
   async queryAllDeviceType() {
@@ -107,6 +108,8 @@ class DeviceTyeService {
         if (device == null) {
           throw new Error(`invalid device`);
         }
+        // const version = await device.versions.filter((version) =>version._id == idVersion);
+        console.log(version);
         try {
           await deviceTypeModel.updateOne({},{$pull:{"versions":{"_id":idVersion}}},{multi:true})
           let result = await device.save();

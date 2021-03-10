@@ -2,12 +2,11 @@ const deviceTypeModel = require("../models/DeviceType");
 const saltApi = require("../helpers/saltApi");
 const axios = require("axios");
 const Constants = require("../config/Constants");
-let Client = require('ssh2-sftp-client');
+let Client = require("ssh2-sftp-client");
 let sftp = new Client();
-var Client2 = require('ssh2').Client;
+var Client2 = require("ssh2").Client;
 
 class SaltStackService {
-
   //POST
   async func(fun, tgt) {
     let arg = false;
@@ -113,10 +112,10 @@ class SaltStackService {
       throw new Error(error.message);
     }
   }
-  async getDetailHistory(jid){
+  async getDetailHistory(jid) {
     const token = await saltApi.initToken();
-    if(token == null){
-      throw new Error("Invalid Token")
+    if (token == null) {
+      throw new Error("Invalid Token");
     }
     try {
       const res = await axios.get(`${Constants.BASE_URL}/jobs/${jid}`, {
@@ -128,48 +127,51 @@ class SaltStackService {
       throw new Error(error.message);
     }
   }
-  async sendFile(host,username,password,destination){
+  async sendFile(host, username, password, destination) {
+    const config = {
+      host: host,
+      port: 22,
+      username: username,
+      password: password,
+    };
+    const path = `${process.cwd()}/public/config`;
+    try {
+      await sftp.connect(config);
+      sftp.on("upload", (info) => {
+        console.log(`Listener: Uploaded ${info.source}`);
+      });
+      let rslt = await sftp.uploadDir(path, destination);
+      return rslt;
+    } finally {
+      sftp.end();
+    }
+  }
+
+  async executeFile(host, username, password) {
     const config = {
       host: host,
       port: 22,
       username: username,
       password: password
-      }
-    //'/home/minions'
-    const path = `${process.cwd()}/public/config`;
-    await sftp.connect(config).then(() => {
-        return sftp.uploadDir(path,destination)
-    }).then((data) => {
-      console.log(data, 'the data info');
-      sftp.end();
-      res.json('uploaded')
-    }).catch(err => {
-        console.log('error', err);
-      console.log(err, 'catch error');
-    });
-  }
-  async executeFile(){
-    const config = {
-      host: '10.2.65.35',
-      port: 22,
-      username: 'minions',
-      password: '123456a@A!@#$'
-      }
+    };
     var conn = new Client2();
     const encode = 'utf8';
     conn.on('ready', function() {
-        // avoid the use of console.log due to it adds a new line at the end of
-        // the message
         process.stdout.write('Connection :: ready');
+        let password = '123456a@A!@#$';
+        let command = '';
+        let pwSent = false;
+        let su = false;
         let commands = [
             `sudo su`,
             `123456a@A!@#$`,
-            `sh copy.sh`
+            `sh setup.sh`
         ];
         conn.shell((err, stream) => {
           if (err) {
             console.log(err);
           }
+      
           stream.on('exit', function (code) {
             process.stdout.write('Connection :: exit');
             conn.end();
@@ -181,12 +183,6 @@ class SaltStackService {
       
             // handle su password prompt
             if (command.indexOf('su') !== -1 && !pwSent) {
-               /*
-               * if su has been sent a data event is triggered but the
-               * first event is not the password prompt, this will ignore the
-               * first event and only respond when the prompt is asking
-               * for the password
-               */
                if (command.indexOf('su') > -1) {
                   su = true;
                }
@@ -211,8 +207,7 @@ class SaltStackService {
                   if (su) {
                      su = false;
                      stream.write('exit\n');
-                     console.log("Stream  " + stream);
-                     return stream
+                     stream.end();
                   } else {
                      stream.end('exit\n');
                   }
@@ -227,7 +222,6 @@ class SaltStackService {
         });
       }).connect(config);
   }
-
 }
 
 module.exports = new SaltStackService();

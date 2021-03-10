@@ -108,6 +108,12 @@ router.get('/get',function(req, res){
     })
 })
 router.get('/append',function(req, res){ 
+  const config = {
+    host: '10.2.65.34',
+    port: 22,
+    username: 'master',
+    password: '123456a@A!@#$'
+    }
     const options = {
         flags: 'a',  // w - write and a - append
         encoding: null, // use null for binary files
@@ -115,7 +121,7 @@ router.get('/append',function(req, res){
         autoClose: true // automatically close the write stream when finished
       }
     sftp.connect(config).then(() => {
-        return sftp.append(Buffer.from('Hello world'), '/home/master/total/testPut1.sls');
+        return sftp.append(Buffer.from('Hello world'), '/home/master/copy.sls');
     }).then((data) => {
       console.log(data, 'the data info');
       res.json(data)
@@ -142,93 +148,85 @@ router.get('/upload',function(req, res){
 })
 
 router.get('/executeFile',function(req,res){
+
   var conn = new Client2();
   const encode = 'utf8';
-  conn.on('ready', function() {
-      // avoid the use of console.log due to it adds a new line at the end of
-      // the message
-      process.stdout.write('Connection :: ready');
-    
+  conn.on('ready', function(){
+
       let password = '123456a@A!@#$';
       let command = '';
       let pwSent = false;
       let su = false;
       let commands = [
-          `sudo su`,
-          `123456a@A!@#$`,
-          `sh setup.sh`
+        `sudo su`,
+        `123456a@A!@#$`,
+        `sh test.sh`
       ];
-    //        `sudo su`,
-    // `123456a@A!@#$`,
-    // `sudo apt -y install salt-minion `,
-    // `ifconfig`,
-    // `cp minion /etc/salt/minion`,
-    // `/etc/init.d/salt-minion restart`
       conn.shell((err, stream) => {
-        if (err) {
-          console.log(err);
-        }
-    
-        stream.on('exit', function (code) {
-          process.stdout.write('Connection :: exit');
-          conn.end();
-        });
-    
-        stream.on('data', function(data) {
-          console.log("data "+ data);
-          process.stdout.write(data.toString(encode));
-    
-          // handle su password prompt
-          if (command.indexOf('su') !== -1 && !pwSent) {
-             /*
-             * if su has been sent a data event is triggered but the
-             * first event is not the password prompt, this will ignore the
-             * first event and only respond when the prompt is asking
-             * for the password
-             */
-             if (command.indexOf('su') > -1) {
-                su = true;
-             }
-             if (data.indexOf(':') >= data.length - 2) {
-                pwSent = true;
-                stream.write(password + '\n');
-             }
-          } else {
-            // detect the right condition to send the next command
-            let dataLength = data.length > 2;
-            let commonCommand = data.indexOf('$') >= data.length - 2;
-            let suCommand = data.indexOf('#') >= data.length - 2;
-    
-            if (dataLength && (commonCommand || suCommand )) {
-    
-              if (commands.length > 0) {
-                command = commands.shift();
-                stream.write(command + '\n');
-    
-              } else {
-                // su requires two exit commands to close the session
-                if (su) {
-                   su = false;
-                   stream.write('exit\n');
+          if (err) {
+            console.log(err);
+          }
+      
+          stream.on('exit', function (code) {
+            process.stdout.write('Connection :: exit');
+            conn.end();
+          });
+      
+          stream.on('data', function(data) {
+            process.stdout.write(data.toString(encode));
+           
+      
+            // handle su password prompt
+            if (command.indexOf('su') !== -1 && !pwSent) {
+               /*
+               * if su has been sent a data event is triggered but the
+               * first event is not the password prompt, this will ignore the
+               * first event and only respond when the prompt is asking
+               * for the password
+               */
+               if (command.indexOf('su') > -1) {
+                  su = true;
+               }
+               if (data.indexOf(':') >= data.length - 2) {
+                  pwSent = true;
+                  stream.write(password + '\n');
+               }
+            } else {
+              // detect the right condition to send the next command
+              let dataLength = data.length > 2;
+              let commonCommand = data.indexOf('$') >= data.length - 2;
+              let suCommand = data.indexOf('#') >= data.length - 2;
+      
+              if (dataLength && (commonCommand || suCommand )) {
+      
+                if (commands.length > 0) {
+                  command = commands.shift();
+                   stream.write(command + '\n');
+                   
                 } else {
-                   stream.end('exit\n');
+                  // su requires two exit commands to close the session
+                  if (su) {
+                     su = false;
+                     stream.write('exit\n');
+                  } else {
+                     stream.end('exit\n');
+                  }
                 }
               }
             }
-          }
-        });
-    
-        // first command
-        command = commands.shift();
-        stream.write(command + '\n');
-      });
-    }).connect({
+          });
+
+      
+      command = commands.shift();
+      stream.write(command + '\n');
+      stream.end()
+
+      });        
+  }).connect({
       host: '10.2.65.38',
       port: 22,
       username: 'minions2',
-      password: '123456a@A!@#$'
-    
-  });
+      password: '123456a@A!@#$'})
 })
 
 router.get('/fastput',function(req, res){ 
@@ -265,92 +263,36 @@ exec("ls -la", (error, stdout, stderr) => {
 });
 })
 
-// router.get('/root',function(req, res){
-//   var conn = new Client2();
-//     const encode = 'utf8';
-//     conn.on('ready', function() {
-//         // avoid the use of console.log due to it adds a new line at the end of
-//         // the message
-//         process.stdout.write('Connection :: ready');
-      
-//         let password = '123456a@A!@#$';
-//         let command = '';
-//         let pwSent = false;
-//         let su = false;
-//         let commands = [
-//           `ls`,
-//           `sudo su`,
-//           `123456a@A!@#$`,
-//           // `sh install-minion.sh`,
-//           // `ifconfig`,
-//           // `sh setup.sh`  
-//         ];
-      
-//         conn.shell((err, stream) => {
-//           if (err) {
-//             console.log(err);
-//           }
-      
-//           stream.on('exit', function (code) {
-//             process.stdout.write('Connection :: exit');
-//             conn.end();
-//           });
-      
-//           stream.on('data', function(data) {
+router.get('/root',function(req, res){
+  let newMode = 0o666;  // rw-r-r
+let client = new Client();
 
-//             process.stdout.write(data.toString(encode));
-      
-//             // handle su password prompt
-//             if (command.indexOf('su') !== -1 && !pwSent) {
-//                /*
-//                * if su has been sent a data event is triggered but the
-//                * first event is not the password prompt, this will ignore the
-//                * first event and only respond when the prompt is asking
-//                * for the password
-//                */
-//                if (command.indexOf('su') > -1) {
-//                   su = true;
-//                }
-//                if (data.indexOf(':') >= data.length - 2) {
-//                   pwSent = true;
-//                   stream.write(password + '\n');
-//                }
-//             } else {
-//               // detect the right condition to send the next command
-//               let dataLength = data.length > 2;
-//               let commonCommand = data.indexOf('$') >= data.length - 2;
-//               let suCommand = data.indexOf('#') >= data.length - 2;
-      
-//               if (dataLength && (commonCommand || suCommand )) {
-      
-//                 if (commands.length > 0) {
-//                   command = commands.shift();
-//                   stream.write(command + '\n');
-      
-//                 } else {
-//                   // su requires two exit commands to close the session
-//                   if (su) {
-//                      su = false;
-//                      stream.write('exit\n');
-//                   } else {
-//                      stream.end('exit\n');
-//                   }
-//                 }
-//               }
-//             }
-//           });
-      
-//           // first command
-//           command = commands.shift();
-//           stream.write(command + '\n');
-//         });
-//       }).connect({
-//       host: '10.2.65.38',
-//       port: 22,
-//       username: 'minions2',
-//       password: '123456a@A!@#$'
-      
+client.connect(config)
+  .then(() => {
+    return client.chmod('/home/minions2', newMode);
+  })
+  .then(() => {
+    console.log("data");
+//     var conn = new Client();
+//   conn.on('ready', function() {
+//   console.log('Client :: ready');
+//   conn.exec('sh setup.sh', function(err, stream) {
+//     if (err) throw err;
+//     stream.on('close', function(code, signal) {
+//       console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+//       conn.end();
+//     }).on('data', function(data) {
+//       console.log('STDOUT: ' + data);
+//     }).stderr.on('data', function(data) {
+//       console.log('STDERR: ' + data);
 //     });
-// })
+//   });
+// }).connect(config);
+    return client.end();
+  })
+  .catch(err => {
+    console.error(err.message);
+  });
+})
 
 module.exports = router;

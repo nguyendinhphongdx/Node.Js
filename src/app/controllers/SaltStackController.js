@@ -2,7 +2,7 @@ const { db } = require("../models/User");
 const saltService = require("../service/SaltStackService");
 const jsonInstance = require("../utils/JsonUtils");
 const responeInstance = require("../utils/ResponeUtils");
-
+const { validationResult } = require("express-validator");
 class SaltStackController {
   async func(req, res) {
     var respone = {
@@ -124,7 +124,59 @@ class SaltStackController {
   }
   //POST
   async sendFile(req, res) {
-    
+    var respone = {
+      host: req.body.host,
+      username: req.body.username,
+      password: req.body.password,
+      destination: req.body.destination
+    };
+       const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      responeInstance.error422(
+        res,
+        jsonInstance.jsonNoData({ errors: errors.array() })
+      );
+      return;
+    }
+    await saltService
+      .sendFile(respone.host, respone.username,respone.password,respone.destination)
+      .then((file) => {
+        console.log(file);
+        responeInstance.success200(
+          res,
+          jsonInstance.toJsonWithData(`ADD SUCCCESS!`, file)
+        );
+      })
+      .catch((err) => {
+        responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+      });
+  }
+  async execute(req, res){
+    var respone = {
+      host: req.body.host,
+      username: req.body.username,
+      password: req.body.password
+    };
+       const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      responeInstance.error422(
+        res,
+        jsonInstance.jsonNoData({ errors: errors.array() })
+      );
+      return;
+    }
+    await saltService
+      .executeFile(respone.host, respone.username,respone.password)
+      .then((file) => {
+        console.log(file);
+        responeInstance.success200(
+          res,
+          jsonInstance.toJsonWithData(`ADD SUCCCESS!`, file)
+        );
+      })
+      .catch((err) => {
+        responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+      });
   }
 }
 

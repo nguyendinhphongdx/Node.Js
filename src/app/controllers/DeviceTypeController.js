@@ -90,7 +90,7 @@ class DeviceTypeController {
     }
     if (response.versionName && response.description && response.idDeviceType) {
       console.log(`fileName ${response.filename}`);
-
+      
       await versionSerive.createVersion(
           response.versionName,
           response.description,
