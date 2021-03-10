@@ -6,6 +6,9 @@ const devicetypeService = require("../service/DeviceTypeService");
 const { authuShema } = require("../validate/authenSchema");
 const createError = require("http-errors");
 const versionSerive = require("../service/VersionService");
+const pathUpload = process.cwd() +'/public/';
+const DeviceType = require("../models/DeviceType");
+const fs = require('fs');
 class DeviceTypeController {
   //POST
   async createDeviceType(req, res) {
@@ -17,21 +20,33 @@ class DeviceTypeController {
       );
       return;
     }
-    var respone = {
-      name: req.body.name,
-      description: req.body.description,
-    };
-    await devicetypeService
-      .createDeviceType(respone.name, respone.description)
-      .then((device) => {
-        responeInstance.success200(
-          res,
-          jsonInstance.toJsonWithData(`ADD SUCCCESS!`, device)
-        );
-      })
-      .catch((err) => {
-        responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
-      });
+    try {
+      var respone = {
+        name: req.body.name,
+        description: req.body.description,
+      };
+      await devicetypeService
+        .createDeviceType(respone.name, respone.description)
+        .then((device) => {
+          var dir =  pathUpload+`${device.name}`;
+          if (!fs.existsSync(dir)) {
+              fs.mkdirSync(dir);
+              console.log('created',dir);
+              responeInstance.success200(
+                res,
+                jsonInstance.toJsonWithData(`ADD SUCCCESS!`, device)
+              );
+          }else{
+            console.log('uncreated',dir);
+            throw new Error('Error creating folder')
+          }
+        })
+        .catch((err) => {
+          responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+        });
+    } catch (error) {
+      responeInstance.error400(res, jsonInstance.jsonNoData(error.message));
+    }
   }
   async getAllDeviceType(_, res) {
     await devicetypeService
@@ -65,7 +80,7 @@ class DeviceTypeController {
       responeInstance.error400(res, jsonInstance.jsonNoData(`URL ERROR`));
     }
   }
-  async addVersion(req, res) {
+  async addVersion(req, res,next) {
     var response = {
       versionName: req.body.versionName,
       description: req.body.description,
@@ -88,37 +103,38 @@ class DeviceTypeController {
       );
       return;
     }
-    if (response.versionName && response.description && response.idDeviceType) {
-      console.log(`fileName ${response.filename}`);
-      
-      await versionSerive.createVersion(
-          response.versionName,
-          response.description,
-          response.fieldname,
-          response.originalname,
-          response.encoding,
-          response.minetype,
-          response.destination,
-          response.filename,
-          response.path,
-          response.size)
-        .then(async (device) => {
-          // console.log(`create version =${device}`);
-          await devicetypeService
-            .addVersion(device, response.idDeviceType)
-            .then((version) => {
-              responeInstance.success200(
-                res,
-                jsonInstance.toJsonWithData(`create successfully`, version)
-              );
-            });
-          // console.log(`Result data = ${res}`);
-        })
-        .catch((err) => {
-          responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
-        });
-    } else {
-      responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
+    try {
+      if (response.versionName && response.description && response.idDeviceType) {
+           await versionSerive.createVersion(
+            response.versionName,
+            response.description,
+            response.fieldname,
+            response.originalname,
+            response.encoding,
+            response.minetype,
+            response.destination,
+            response.filename,
+            response.path,
+            response.size)
+          .then(async (device) => {
+            // console.log(`create version =${device}`);
+            await devicetypeService
+              .addVersion(device, response.idDeviceType)
+              .then((version) => {
+                responeInstance.success200(
+                  res,
+                  jsonInstance.toJsonWithData(`create successfully`, version)
+                );
+              });
+          })
+          .catch((err) => {
+            responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+          });
+      } else {
+        responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
+      }
+    } catch (error) {
+      responeInstance.error400(res, jsonInstance.jsonNoData(error));
     }
   }
   async deleteService(req, res) {
@@ -147,7 +163,6 @@ class DeviceTypeController {
       idVersion: req.body.idVersion,
     };
     if (response.idDeviceType != null) {
-
       await devicetypeService.deleteVersion(response.idDeviceType, response.idVersion)
       .then(async (data) => {
         await versionSerive.deleteVersion(response.idVersion)

@@ -6,9 +6,22 @@ const debug  = require('debug')('server-bif:app');
 const serveIndex = require('serve-index')
 const deviceRouter = require("../app/controllers/DeviceTypeController");
 const verifyToken = require("../app/helpers/tokenCheker");
+const DeviceType = require("../app/models/DeviceType");
+const Version = require("../app/models/Version");
 var storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, './public')
+    destination: async(req, file, cb) => {
+        const _deviceType = await DeviceType.findById(req.body.idDeviceType);
+        const versions = _deviceType.verison;
+        const nameFolder = _deviceType.name;
+        const res =  _deviceType.versions.some(version => version.versionName == req.body.versionName);
+        console.log(res);
+        if(res){
+            console.log('File is exists...');
+        }else{
+            console.log('File is not exists...');
+            cb(null, `./public/${nameFolder}`)
+        }
+        
     },
     filename: (req, file, cb) => {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
