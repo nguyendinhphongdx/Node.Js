@@ -1,4 +1,6 @@
 const versionModel = require('../models/Version');
+const fs = require('fs');
+const uploadPath =process.cwd() +'/';
 class DeviceTyeService {
   //GET
   async queryAllVersion() {
@@ -70,8 +72,15 @@ class DeviceTyeService {
           throw new Error(`invalid version`)
         }
         try {
-          console.log(`Version ${version}`);
-          let result = await versionModel.findByIdAndDelete(version._id)
+          let result = await versionModel.findById(version._id)
+          const pathVersion = uploadPath+result.path;
+          console.log('path version:',pathVersion);
+          if(fs.existsSync(pathVersion)){
+            fs.unlinkSync(pathVersion);
+            console.log('File is found...');
+          }else{
+            console.log('File not found...');
+          }
           return result;
         } catch (err) {
           throw new Error(err.message)

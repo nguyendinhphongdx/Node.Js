@@ -1,7 +1,7 @@
 const upload = require("../middleware/multipleUpload");
 
 class UploadConfigController {
-  multipleUpload = async (req, res) => {
+  async multipleUpload(req, res){
     try {
       await upload(req, res);
       if (req.files.length <= 0) {
