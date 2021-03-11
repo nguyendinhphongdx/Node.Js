@@ -153,6 +153,7 @@ class SaltStackService {
       username: username,
       password: password
     };
+<<<<<<< HEAD
   console.log(config);
   var conn = new Client2();
   const encode = 'utf8';
@@ -163,16 +164,31 @@ class SaltStackService {
     });
     conn.on('ready',function(){
       let password = config.password;
+=======
+    var conn = new Client2();
+  const encode = 'utf8';
+  conn.on('ready', function(){
+
+      let password = password;
+>>>>>>> c04c7d3ea1a5c797aafb46682c4a10becf01ed55
       let command = '';
       let pwSent = false;
       let su = false;
       let commands = [
         `sudo su`,
+<<<<<<< HEAD
         password,
         `sh exec.sh`, 
       ];
       conn.shell((err, stream) => {
         console.log('in shelling ....');
+=======
+        `123456a@A!@#$`,
+        `sh test.sh`
+      ];
+
+      conn.shell((err, stream) => {
+>>>>>>> c04c7d3ea1a5c797aafb46682c4a10becf01ed55
           if (err) {
             console.log('error in ready',err.message);
             conn.end();
@@ -183,14 +199,19 @@ class SaltStackService {
             console.log(code);
             resolve('success');
             conn.end();
+            stream.end()
           });
           stream.on('data', function(data) {
             process.stdout.write(data.toString(encode));
+<<<<<<< HEAD
             if(data.toString(encode)==200){
               console.log('Execute success');
             }else if(data.toString(encode)==400){
               console.log('Execute failed');
             }
+=======
+           
+>>>>>>> c04c7d3ea1a5c797aafb46682c4a10becf01ed55
             // handle su password prompt
             if (command.indexOf('su') !== -1 && !pwSent) {
                /*
@@ -235,6 +256,10 @@ class SaltStackService {
       command = commands.shift();
       stream.write(command + '\n');
       });        
+<<<<<<< HEAD
+=======
+  }).connect(config)
+>>>>>>> c04c7d3ea1a5c797aafb46682c4a10becf01ed55
   }
   )
   .connect(config)

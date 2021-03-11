@@ -123,7 +123,10 @@ router.get('/stat',function(req, res){
       console.log(err, 'catch error');
     });
 })
+<<<<<<< HEAD
 
+=======
+>>>>>>> c04c7d3ea1a5c797aafb46682c4a10becf01ed55
 router.get('/get',function(req, res){ 
     const options = {
         flags: 'a',  // w - write and a - append
@@ -161,7 +164,7 @@ router.get('/append',function(req, res){
         autoClose: true // automatically close the write stream when finished
       }
     sftp.connect(config).then(() => {
-        return sftp.append(Buffer.from('Hello world'), '/home/master/copy.sls');
+        return sftp.append(Buffer.from('Hello world'), '/home/master/copy.sls',options);
     }).then((data) => {
       console.log(data, 'the data info');
       res.json(data)
@@ -188,7 +191,11 @@ router.get('/upload',function(req, res){
 })
 
 router.get('/executeFile',function(req,res){
+<<<<<<< HEAD
   var conn = new Client();
+=======
+  var conn = new Client2();
+>>>>>>> c04c7d3ea1a5c797aafb46682c4a10becf01ed55
   const encode = 'utf8';
   conn.on('ready', function(){
       let password = '123456a@A!@#$';
