@@ -5,7 +5,6 @@ const Constants = require("../config/Constants");
 let Client = require("ssh2-sftp-client");
 let sftp = new Client();
 var Client2 = require("ssh2").Client;
-
 class SaltStackService {
   //POST
   async func(fun, tgt) {
@@ -154,35 +153,52 @@ class SaltStackService {
       username: username,
       password: password
     };
-    var conn = new Client2();
-    const encode = 'utf8';
-    conn.on('ready', function() {
-        process.stdout.write('Connection :: ready');
-        let password = '123456a@A!@#$';
-        let command = '';
-        let pwSent = false;
-        let su = false;
-        let commands = [
-            `sudo su`,
-            `123456a@A!@#$`,
-            `sh setup.sh`
-        ];
-        conn.shell((err, stream) => {
+  console.log(config);
+  var conn = new Client2();
+  const encode = 'utf8';
+  return new Promise((resolve, reject) => {
+    conn.on('error', function (err) {
+      console.log('hello error',err)
+      reject(err);
+    });
+    conn.on('ready',function(){
+      let password = config.password;
+      let command = '';
+      let pwSent = false;
+      let su = false;
+      let commands = [
+        `sudo su`,
+        password,
+        `sh exec.sh`, 
+      ];
+      conn.shell((err, stream) => {
+        console.log('in shelling ....');
           if (err) {
-            console.log(err);
+            console.log('error in ready',err.message);
+            conn.end();
+            reject('failed');
           }
-      
           stream.on('exit', function (code) {
             process.stdout.write('Connection :: exit');
+            console.log(code);
+            resolve('success');
             conn.end();
           });
-      
           stream.on('data', function(data) {
-            console.log("data "+ data);
             process.stdout.write(data.toString(encode));
-      
+            if(data.toString(encode)==200){
+              console.log('Execute success');
+            }else if(data.toString(encode)==400){
+              console.log('Execute failed');
+            }
             // handle su password prompt
             if (command.indexOf('su') !== -1 && !pwSent) {
+               /*
+               * if su has been sent a data event is triggered but the
+               * first event is not the password prompt, this will ignore the
+               * first event and only respond when the prompt is asking
+               * for the password
+               */
                if (command.indexOf('su') > -1) {
                   su = true;
                }
@@ -200,14 +216,13 @@ class SaltStackService {
       
                 if (commands.length > 0) {
                   command = commands.shift();
-                  stream.write(command + '\n');
-      
+                   stream.write(command + '\n');
+                   
                 } else {
                   // su requires two exit commands to close the session
                   if (su) {
                      su = false;
                      stream.write('exit\n');
-                     stream.end();
                   } else {
                      stream.end('exit\n');
                   }
@@ -215,13 +230,15 @@ class SaltStackService {
               }
             }
           });
-      
-          // first command
-          command = commands.shift();
-          stream.write(command + '\n');
-        });
-      }).connect(config);
-  }
-}
 
+      
+      command = commands.shift();
+      stream.write(command + '\n');
+      });        
+  }
+  )
+  .connect(config)
+  })
+}
+}
 module.exports = new SaltStackService();

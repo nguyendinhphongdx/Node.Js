@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-let Client = require('ssh2-sftp-client');
-let sftp = new Client();
-var Client2 = require('ssh2').Client;
+// let Client = require('ssh2-sftp-client');
+// let sftp = new Client();
+var Client = require('ssh2').Client;
 const fs = require('fs');
 const config = {
   host: '10.2.65.38',
@@ -13,28 +13,83 @@ const config = {
 
   
 router.get('/connect',function(req, res){
-    var conn = new Client2();
-    conn.on('ready', function() {
-      console.log('Client :: ready');
-    
-      conn.exec('ls', function(err, stream) {
-        if (err) throw err;
-        stream.on('uptime', function(code, signal) {
-          console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-          conn.end();
-        }).on('data', function(data) {
-            res.json(data)
-          console.log('STDOUT: ' + data);
-        }).stderr.on('data', function(data) {
-          console.log('STDERR: ' + data);
-        });
-      });
-    }).connect({
-        host: '10.2.65.35',
-        port: 22,
-        username: 'minions',
-        password: '123456a@A!@#$'
-      });
+  var conn = new Client();
+  const encode = 'utf8';
+  conn.on('ready', function(){
+
+      let password = '123456a@A!@#$';
+      let command = '';
+      let pwSent = false;
+      let su = false;
+      let commands = [
+        `sudo su`,
+        `123456a@A!@#$`,
+        `sh test.sh`
+      ];
+
+      conn.shell((err, stream) => {
+          if (err) {
+            console.log(err);
+          }
+      
+          stream.on('exit', function (code) {
+            process.stdout.write('Connection :: exit');
+            conn.end();
+          });
+      
+          stream.on('data', function(data) {
+            process.stdout.write(data.toString(encode));
+           
+      
+            // handle su password prompt
+            if (command.indexOf('su') !== -1 && !pwSent) {
+               /*
+               * if su has been sent a data event is triggered but the
+               * first event is not the password prompt, this will ignore the
+               * first event and only respond when the prompt is asking
+               * for the password
+               */
+               if (command.indexOf('su') > -1) {
+                  su = true;
+               }
+               if (data.indexOf(':') >= data.length - 2) {
+                  pwSent = true;
+                  stream.write(password + '\n');
+               }
+            } else {
+              // detect the right condition to send the next command
+              let dataLength = data.length > 2;
+              let commonCommand = data.indexOf('$') >= data.length - 2;
+              let suCommand = data.indexOf('#') >= data.length - 2;
+      
+              if (dataLength && (commonCommand || suCommand )) {
+      
+                if (commands.length > 0) {
+                  command = commands.shift();
+                   stream.write(command + '\n');
+                   
+                } else {
+                  // su requires two exit commands to close the session
+                  if (su) {
+                     su = false;
+                     stream.write('exit\n');
+                  } else {
+                     stream.end('exit\n');
+                  }
+                }
+              }
+            }
+          });
+
+      
+      command = commands.shift();
+      stream.write(command + '\n');
+      });        
+  }).connect({
+      host: '10.2.65.38',
+      port: 22,
+      username: 'minions2',
+      password: '123456a@A!@#$'})
     
 })
 
@@ -68,22 +123,7 @@ router.get('/stat',function(req, res){
       console.log(err, 'catch error');
     });
 })
-// router.get('/')
-// {
-//     "mode": 16877,
-//     "uid": 1000,
-//     "gid": 1000,
-//     "size": 4096,
-//     "accessTime": 1614841637000,
-//     "modifyTime": 1614838830000,
-//     "isDirectory": true,
-//     "isFile": false,
-//     "isBlockDevice": false,
-//     "isCharacterDevice": false,
-//     "isSymbolicLink": false,
-//     "isFIFO": false,
-//     "isSocket": false
-// }
+
 router.get('/get',function(req, res){ 
     const options = {
         flags: 'a',  // w - write and a - append
@@ -148,11 +188,9 @@ router.get('/upload',function(req, res){
 })
 
 router.get('/executeFile',function(req,res){
-
-  var conn = new Client2();
+  var conn = new Client();
   const encode = 'utf8';
   conn.on('ready', function(){
-
       let password = '123456a@A!@#$';
       let command = '';
       let pwSent = false;
@@ -160,22 +198,27 @@ router.get('/executeFile',function(req,res){
       let commands = [
         `sudo su`,
         `123456a@A!@#$`,
-        `sh test.sh`
+        `sh exec.sh`
       ];
+
       conn.shell((err, stream) => {
           if (err) {
             console.log(err);
+            res.json('failed');
           }
-      
           stream.on('exit', function (code) {
             process.stdout.write('Connection :: exit');
             conn.end();
+            res.json('success');
           });
       
           stream.on('data', function(data) {
             process.stdout.write(data.toString(encode));
-           
-      
+            if(data.toString(encode)==200){
+              console.log('Execute success');
+            }else if(data.toString(encode)==400){
+              console.log('Execute failed');
+            }
             // handle su password prompt
             if (command.indexOf('su') !== -1 && !pwSent) {
                /*
@@ -219,8 +262,6 @@ router.get('/executeFile',function(req,res){
       
       command = commands.shift();
       stream.write(command + '\n');
-      stream.end()
-
       });        
   }).connect({
       host: '10.2.65.38',
@@ -229,24 +270,6 @@ router.get('/executeFile',function(req,res){
       password: '123456a@A!@#$'})
 })
 
-router.get('/fastput',function(req, res){ 
-  const path = `${process.cwd()}/public/testPut.sls`;
-  // const exact =`/upload/testPut.txt`
-  const exact = `/public/testPut.sls`
-  console.log(fs.existsSync(path));
-  sftp.connect(config).then(() => {
-      return sftp.fastPut(exact,'/home/uploadFromMaster')
-  }).then((data) => {
-    console.log(data, 'the data info');
-    
-  }).catch(err => {
-    res.json(err.message)
-  })
-  .finally(()=>{
-    res.json('finished')
-    sftp.end();
-  })
-})
 router.get('/process',function(req, res){
 
 
