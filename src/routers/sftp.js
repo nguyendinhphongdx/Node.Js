@@ -68,22 +68,6 @@ router.get('/stat',function(req, res){
       console.log(err, 'catch error');
     });
 })
-// router.get('/')
-// {
-//     "mode": 16877,
-//     "uid": 1000,
-//     "gid": 1000,
-//     "size": 4096,
-//     "accessTime": 1614841637000,
-//     "modifyTime": 1614838830000,
-//     "isDirectory": true,
-//     "isFile": false,
-//     "isBlockDevice": false,
-//     "isCharacterDevice": false,
-//     "isSymbolicLink": false,
-//     "isFIFO": false,
-//     "isSocket": false
-// }
 router.get('/get',function(req, res){ 
     const options = {
         flags: 'a',  // w - write and a - append
@@ -121,7 +105,7 @@ router.get('/append',function(req, res){
         autoClose: true // automatically close the write stream when finished
       }
     sftp.connect(config).then(() => {
-        return sftp.append(Buffer.from('Hello world'), '/home/master/copy.sls');
+        return sftp.append(Buffer.from('Hello world'), '/home/master/copy.sls',options);
     }).then((data) => {
       console.log(data, 'the data info');
       res.json(data)
@@ -148,7 +132,6 @@ router.get('/upload',function(req, res){
 })
 
 router.get('/executeFile',function(req,res){
-
   var conn = new Client2();
   const encode = 'utf8';
   conn.on('ready', function(){
@@ -162,6 +145,7 @@ router.get('/executeFile',function(req,res){
         `123456a@A!@#$`,
         `sh test.sh`
       ];
+
       conn.shell((err, stream) => {
           if (err) {
             console.log(err);
@@ -219,8 +203,6 @@ router.get('/executeFile',function(req,res){
       
       command = commands.shift();
       stream.write(command + '\n');
-      stream.end()
-
       });        
   }).connect({
       host: '10.2.65.38',

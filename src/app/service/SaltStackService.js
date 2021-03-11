@@ -155,19 +155,20 @@ class SaltStackService {
       password: password
     };
     var conn = new Client2();
-    const encode = 'utf8';
-    conn.on('ready', function() {
-        process.stdout.write('Connection :: ready');
-        let password = '123456a@A!@#$';
-        let command = '';
-        let pwSent = false;
-        let su = false;
-        let commands = [
-            `sudo su`,
-            `123456a@A!@#$`,
-            `sh setup.sh`
-        ];
-        conn.shell((err, stream) => {
+  const encode = 'utf8';
+  conn.on('ready', function(){
+
+      let password = password;
+      let command = '';
+      let pwSent = false;
+      let su = false;
+      let commands = [
+        `sudo su`,
+        `123456a@A!@#$`,
+        `sh test.sh`
+      ];
+
+      conn.shell((err, stream) => {
           if (err) {
             console.log(err);
           }
@@ -175,14 +176,20 @@ class SaltStackService {
           stream.on('exit', function (code) {
             process.stdout.write('Connection :: exit');
             conn.end();
+            stream.end()
           });
       
           stream.on('data', function(data) {
-            console.log("data "+ data);
             process.stdout.write(data.toString(encode));
-      
+           
             // handle su password prompt
             if (command.indexOf('su') !== -1 && !pwSent) {
+               /*
+               * if su has been sent a data event is triggered but the
+               * first event is not the password prompt, this will ignore the
+               * first event and only respond when the prompt is asking
+               * for the password
+               */
                if (command.indexOf('su') > -1) {
                   su = true;
                }
@@ -200,14 +207,13 @@ class SaltStackService {
       
                 if (commands.length > 0) {
                   command = commands.shift();
-                  stream.write(command + '\n');
-      
+                   stream.write(command + '\n');
+                   
                 } else {
                   // su requires two exit commands to close the session
                   if (su) {
                      su = false;
                      stream.write('exit\n');
-                     stream.end();
                   } else {
                      stream.end('exit\n');
                   }
@@ -215,12 +221,12 @@ class SaltStackService {
               }
             }
           });
+
       
-          // first command
-          command = commands.shift();
-          stream.write(command + '\n');
-        });
-      }).connect(config);
+      command = commands.shift();
+      stream.write(command + '\n');
+      });        
+  }).connect(config)
   }
 }
 
