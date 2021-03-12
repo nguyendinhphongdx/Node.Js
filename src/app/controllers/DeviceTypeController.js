@@ -84,7 +84,7 @@ class DeviceTypeController {
     var response = {
       versionName: req.body.versionName,
       description: req.body.description,
-      idDeviceType: req.body.idDeviceType,
+      idDeviceType: req.params.idDeviceType,
       fieldname: req.file.fieldname,
       originalname: req.file.originalname,
       encoding: req.file.encoding,
@@ -94,7 +94,6 @@ class DeviceTypeController {
       path: req.file.path,
       size: req.file.size,
     };
-    // const { versionName, description, idDeviceType } = req.body;
     const errors = validationResult(response);
     if (!errors.isEmpty()) {
       responeInstance.error422(

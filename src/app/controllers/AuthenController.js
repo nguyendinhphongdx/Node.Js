@@ -21,7 +21,7 @@ class AuthenController {
       username: req.body.username
     };
     if (respone.password && respone.username) {
-      const result = await authuShema.validateAsync(respone);
+      const result = await authuShema.validateAsync(req.body);
       await authenService.loginWithSalt(result)
         .then((user) => {
           responeInstance

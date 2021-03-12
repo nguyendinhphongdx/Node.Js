@@ -18,17 +18,21 @@ const User = mongosee.Schema({
   createAt: { type: Number, default: Date.now().valueOf() },
   updateAt: { type: Number, default: Date.now().valueOf() },
 });
-User.pre("save", async function (next) {
-  try {
-    const salt = await bcrypt.genSalt(10);
-    const hahedPassword = await bcrypt.hash(this.password, salt);
-    this.password = hahedPassword;
-    this.confirmPassword = hahedPassword;
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+// User.pre("save", async function (next) {
+//   try {
+//     const salt = await bcrypt.genSalt(10);
+//     const hahedPassword = await bcrypt.hashSync(this.password, 10);
+//     this.password = hahedPassword;
+//     this.confirmPassword = hahedPassword;
+//     next();
+//   } catch (error) {
+//     next(error);
+//   }
+// });
+User.pre('save', function(next){
+  this.password = bcrypt.hashSync(this.password, 10);
+  next();
+  });
 User.methods.isValidPassword = async function (password) {
   try {
     return await bcrypt.compare(password, this.password);
@@ -37,4 +41,4 @@ User.methods.isValidPassword = async function (password) {
   }
 };
 
-module.exports = mongosee.model("User", User);
+module.exports = mongosee.model("users", User);

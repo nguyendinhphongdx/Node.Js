@@ -10,28 +10,38 @@ class AuthenService {
   //POST
   async loginWithSalt(result) {
     return await userModel
-      .findOne({ username: result.username })
+      .findOne({ username: result.username})
       .exec()
       .then(async (user) => {
         if (user == null) {
           throw createError.NotFound("User not registered");
         }
-        try {
-          let token = jwt.sign({ _id: user._id }, "secret", {
-            noTimestamp: true,
-            expiresIn: "1h",
-          });
-          let refreshToken = jwt.sign({_id:user._id}, "secret", {
-            noTimestamp:true,
-            expiresIn:"1h",
-          });
-          user.token = token;
-          user.refreshToken = refreshToken;
-          let res = await user.save();
-          return res;
-        } catch (error) {
-          throw new Error("error.message " + error.message);
+        else{
+          if(bcrypt.compareSync(result.password,user.password)){
+            try {
+              let token = jwt.sign({ _id: user._id }, "secret", {
+                noTimestamp: true,
+                expiresIn: "1h",
+              });
+              // const token = await signAccessToken(user._id)
+              // console.log("token " + token);
+              let refreshToken = jwt.sign({_id:user._id}, "secret", {
+                noTimestamp:true,
+                expiresIn:"1h",
+              });
+              user.token = token;
+              user.refreshToken = refreshToken;
+              let res = await user;
+              return res;
+            } catch (error) {
+              throw new Error("error.message " + error.message);
+            }
+          }
+          else {
+            throw new Error("Ivalid password")
+          }
         }
+      
       });
   }
   async logoutWithId(idUser) {
