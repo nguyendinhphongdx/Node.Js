@@ -10,17 +10,21 @@ const DeviceType = require("../app/models/DeviceType");
 const Version = require("../app/models/Version");
 var storage = multer.diskStorage({
     destination: async(req, file, cb) => {
+        console.log(req);
         const _deviceType = await DeviceType.findById(req.params.idDeviceType);
-        const nameFolder = _deviceType.name;
-        const res =  _deviceType.versions.some(version => version.versionName == req.body.versionName);
-        console.log(res);
-        if(res){
-            console.log('Version is exists...');
-            // res.json("Version is exists..")
+        if(_deviceType){
+            const nameFolder = _deviceType.name;
+            const res =  _deviceType.versions.some(version => version.versionName == req.body.versionName);
+            console.log(res);
+            if(res){
+                console.log('Version is exists...');
+            }else{
+                console.log('Version is not exists...');
+                cb(null, `./public/${nameFolder}`)
+            }
         }else{
-            console.log('Version is not exists...');
-            cb(null, `./public/${nameFolder}`)
-        }       
+            console.log('Not Found DeviceType');
+        }
     },
     filename: (req, file, cb) => {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))

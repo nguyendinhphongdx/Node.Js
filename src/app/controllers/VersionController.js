@@ -3,6 +3,8 @@ const responeInstance = require("../utils/ResponeUtils");
 const { validationResult } = require("express-validator");
 const versionService = require("../service/VersionService");
 const createError = require("http-errors");
+var fs = require("fs");
+var JSZip = require("jszip");
 class VersionController {
   //POST
   async createVersion(req, res) {
@@ -81,6 +83,27 @@ class VersionController {
       .catch((err) => {
         responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
       });
+  }
+  async unzipVersion(req, res, next) {
+    const path = req.body.path;
+    console.log(path);
+    if(fs.existsSync(path)){
+      console.log(true);
+        fs.readFile(path, function(err, data) {
+        if (err) throw err;
+        JSZip.loadAsync(data)
+        .then(function (zip) {
+          responeInstance.success200(
+            res,
+            jsonInstance.toJsonWithData(`SUCCESS`, zip)
+          );
+        })
+        .catch(err => responeInstance.error400(res, jsonInstance.jsonNoData(err.message)))
+    });
+    }else{
+      responeInstance.error400(res, jsonInstance.jsonNoData('Not Found Path'))
+    }
+  
   }
 }
 
