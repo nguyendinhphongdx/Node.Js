@@ -23,8 +23,6 @@ class AuthenService {
                 noTimestamp: true,
                 expiresIn: "1h",
               });
-              // const token = await signAccessToken(user._id)
-              // console.log("token " + token);
               let refreshToken = jwt.sign({_id:user._id}, "secret", {
                 noTimestamp:true,
                 expiresIn:"1h",
