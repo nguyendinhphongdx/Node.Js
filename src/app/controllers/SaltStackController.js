@@ -157,7 +157,7 @@ class SaltStackController {
       username: req.body.username,
       password: req.body.password
     };
-       const errors = validationResult(req);
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       responeInstance.error422(
         res,
@@ -165,19 +165,26 @@ class SaltStackController {
       );
       return;
     }
-    await saltService
-      .executeFile(respone.host, respone.username,respone.password)
-      .then((file) => {
-        console.log(file);
-        responeInstance.success200(
-          res,
-          jsonInstance.toJsonWithData(`ADD SUCCCESS!`, file)
-        );
-      })
-      .catch((err) => {
-        responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
-      });
+    await saltService.sendFile()
   }
 }
+// await saltService.sendFile(response.host, response.username, response.password)
+//   .then((file) => {
+//       if (file != null){
+        
+//       }
+//   })
+    
+// .executeFile(respone.host, respone.username,respone.password)
+// .then((file) => {
+//   console.log(file);
+//   responeInstance.success200(
+//     res,
+//     jsonInstance.toJsonWithData(`ADD SUCCCESS!`, file)
+//   );
+// })
+// .catch((err) => {
+//   responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+// });
 
 module.exports = new SaltStackController();

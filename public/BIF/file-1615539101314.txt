@@ -1,0 +1,79 @@
+-thêm 1 minion mới: salt-key -L
+-chúng ta cần tạo một khóa sẽ được sử dụng bởi các minion: salt-key -F master
+-lệnh khởi động lại dịch vụ systemctl restart salt-master.service
+-xóa 1 minion:
+        1 salt-key -d tenminion
+        2 để kết nối lại: vào lại minion> service salt-minion stop > salt-minion -l debug> rm /etc/salt/pki/minion/minion_master.pub>service salt-minion start>/etc/init.d/salt-minion restart
+        3 vào master accepted lại
+-Test kết nối: salt '*' test.ping
+-test kết nối ssh: salt-ssh '*' test.ping
+-cài đặt 1 ứng dụng lên minion: Salt ‘*ducmanh-minion1’ cmd.run ‘apt install -y python3-pip’
+-chạy 1 câu lệnh trên CMD của minion: salt '*' cmd.run 'tên lệnh'
+- kiểm tra ip mạng của minion: salt '*' network.ip_addrs
+ub server 18
+IP: 10.2.65.38
+user: minions2
+password: 123456a@A!@#$
+
+/etc/init.d/salt-master restart
+//////
+
+xem tất cả máy chủ học động: salt-run manage.alived
+salt-run manage.allowed
+2 in ra danh sách máy chủ không hoạt động: salt-run manage.list_not_state
+3 gửi gmail: my-smtp-login:
+    smtp.server: smtp.domain.com
+    smtp.tls: True
+    smtp.sender: admin@domain.com
+    smtp.username: myuser
+    smtp.password: verybadpass
+    ///// Gửi tin nhắn:
+server-warning-message:
+  smtp.send_msg:
+    - name: 'This is a server warning message'
+    - profile: my-smtp-account
+    - subject: 'Message from Salt'
+    - recipient: admin@example.com
+    - sender: admin@example.com
+    - use_ssl: True
+    - attachments:
+        - /var/log/syslog
+        - /var/log/messages
+
+	link: https://docs.saltproject.io/en/latest/ref/modules/all/salt.modules.smtp.html
+
+/////QUẢN LÝ NHÓM NGƯỜI DÙNG
+xem tất cả user: cat /etc/passwd
+danh sách các user root : awk -F: '{ print $1}' /etc/passwd
+cheese:
+  group.present:
+    - gid: 7648
+    - system: True
+    - addusers:
+      - user1
+      - users2
+    - delusers:
+      - foo
+
+cheese:
+  group.present:
+    - gid: 7648
+    - system: True
+    - members:
+      - foo
+      - bar
+      - user1
+      - user2
+//// Nhóm các thiết bị
+salt -N group1 test.version
+link:https://docs.saltproject.io/en/latest/topics/targeting/nodegroups.html
+nodegroups:
+  group1:
+    - 10.2.65.35
+    - 10.2.65.38
+// Cài đặt file/ cài copy file/ cập nhật file
+//Kiểm tra bao nhiêu thiết bị kết nối
+//thêm nhiều thiết bị 1 lúc
+//xóa từng thiết bị hoạc nhiều thiết bị
+// chạy câu lệnh cmd các con minion hoặc 1 minon
+//xem lịch sử hoạt động của hệ thống sử dụng job
