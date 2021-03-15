@@ -75,6 +75,7 @@ class SaltStackService {
         headers: { "X-Auth-Token": token },
         contentType: "application/json",
       });
+      console.log("data "+ res.data.return[0]);
       return Object.entries(res.data.return[0]);
     } catch (error) {
       console.log("error Service" + error.message);

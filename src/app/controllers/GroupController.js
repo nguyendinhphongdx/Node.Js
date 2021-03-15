@@ -6,6 +6,7 @@ const groupService = require("../service/GroupService");
 const { authuShema } = require("../validate/authenSchema");
 const createError = require("http-errors");
 const versionSerive = require("../service/VersionService");
+const { response } = require("express");
 class GroupController {
   //POST
   async createGroup(req, res) {
@@ -20,12 +21,13 @@ class GroupController {
     var respone = {
       name: req.body.name,
       path: req.body.path,
-      updateType: req.body.updateType
+      updateType: req.body.updateType,
+      idDeviceType: req.body.idDeviceType
     };
     await groupService
-      .createGroup(respone.name, respone.path,respone.updateType)
+      .createGroup(respone.name, respone.path,respone.updateType,response.idDeviceType)
       .then((device) => {
-        responeInstance.success200(res,jsonInstance.toJsonWithData(`ADD SUCCCESS!`, device)
+        responeInstance.success200(res,jsonInstance.toJsonWithData(`CREATE GROUP SUCCCESS!`, device)
         );
       })
       .catch((err) => {

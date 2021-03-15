@@ -16,9 +16,8 @@ var storage = multer.diskStorage({
         console.log(res);
         if(res){
             console.log('Version is exists...');
-            // res.json("Version is exists..")
+            throw new Error('Version is exists')
         }else{
-            console.log('Version is not exists...');
             cb(null, `./public/${nameFolder}`)
         }       
     },
@@ -33,4 +32,5 @@ router.get("/get/:id", verifyToken, deviceRouter.queryWithId);
 router.post("/add-version/:idDeviceType",verifyToken,upload.single('file'),deviceRouter.addVersion);
 router.post("/delete",verifyToken,deviceRouter.deleteService);
 router.post("/delete/version",deviceRouter.deleteVerInDeviceType);
+router.post("/add-group",deviceRouter.addGroup)
 module.exports = router;

@@ -1,6 +1,7 @@
 const versionModel = require('../models/Version');
+const devicetype = require('../models/DeviceType');
 const fs = require('fs');
-const uploadPath =process.cwd() +'/';
+const uploadPath = process.cwd() +'/';
 class DeviceTyeService {
   //GET
   async queryAllVersion() {
@@ -30,7 +31,6 @@ class DeviceTyeService {
         throw new Error(err.message);
       })
   }
-
   //POST
   async createVersion(versionName,description,fieldname,originalname,encoding,minetype,destination,filename,path,size) {
     var newVersion = new versionModel();
@@ -41,7 +41,7 @@ class DeviceTyeService {
     newVersion.encoding = encoding
     newVersion.minetype = minetype
     newVersion.destination = destination
-    newVersion.fieldname = filename
+    newVersion.fieldname = fieldname
     newVersion.path = path
     newVersion.size = size
     return await versionModel.findOne({ versionName: versionName })
@@ -62,6 +62,8 @@ class DeviceTyeService {
         throw new Error(err.message)
       })
   }
+
+  //POST
   async deleteVersion(idVersion) {
     console.log(idVersion);
     return await versionModel.findById(idVersion)

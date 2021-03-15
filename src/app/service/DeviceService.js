@@ -1,5 +1,5 @@
 const groupModel = require("../models/GroupDevice");
-
+const device  = require("../models/Device");
 class DeviceService {
   //GET
 //   async queryAllGroup() {
@@ -58,27 +58,30 @@ class DeviceService {
 //         throw new Error(err.message);
 //       });
 //   }
-//   async addVersion(version, idDeviceType) {
-//     return await deviceTypeModel
-//       .findById(idDeviceType)
-//       .exec()
-//       .then(async (devicetype) => {
-//         if (devicetype == null) {
-//           throw new Error(`invalid Device Type`);
-//         }
-
-//         try {
-//           devicetype.version.push(version);
-//           let result = await devicetype.save();
-//           return result;
-//         } catch (err) {
-//           throw new Error(err.message);
-//         }
-//       })
-//       .catch((err) => {
-//         throw new Error(err.message);
-//       });
-//   }
+async createVersion(host,description,fieldname) {
+  var newDevice = new device();
+  newDevice.devic
+  VEW.versionName = versionName
+  newVersion.description = description
+  newVersion.fieldname  = fieldname
+  return await versionModel.findOne({ versionName: versionName })
+    .exec()
+    .then(async (version) => {
+      if (version != null) {
+        throw new Error(`version is exists`)
+      }
+      try {
+        let result = await newVersion.save();
+        console.log(`create version =${result}`)
+        return result
+      } catch (err) {
+        throw new Error(err.message)
+      }
+    })
+    .catch((err) => {
+      throw new Error(err.message)
+    })
+}
 }
 
 module.exports = new DeviceService();

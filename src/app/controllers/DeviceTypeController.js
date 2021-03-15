@@ -1,14 +1,12 @@
 const jsonInstance = require("../utils/JsonUtils");
 const responeInstance = require("../utils/ResponeUtils");
 const { validationResult } = require("express-validator");
-const authenService = require("../service/AuthenService");
 const devicetypeService = require("../service/DeviceTypeService");
-const { authuShema } = require("../validate/authenSchema");
-const createError = require("http-errors");
 const versionSerive = require("../service/VersionService");
+const groupService  = require("../service/GroupService");
 const pathUpload = process.cwd() +'/public/';
-const DeviceType = require("../models/DeviceType");
 const fs = require('fs');
+
 class DeviceTypeController {
   //POST
   async createDeviceType(req, res) {
@@ -116,7 +114,6 @@ class DeviceTypeController {
             response.path,
             response.size)
           .then(async (device) => {
-            // console.log(`create version =${device}`);
             await devicetypeService
               .addVersion(device, response.idDeviceType)
               .then((version) => {
@@ -177,6 +174,45 @@ class DeviceTypeController {
       });
     } else {
       responeInstance.error400(res, jsonInstance.jsonNoData(`URL ERROR`));
+    }
+  }
+  async addGroup(req, res){
+    var response = {
+      name: req.body.name,
+      path: req.body.path,
+      updateType: req.body.updateType,
+      idDeviceType: req.body.idDeviceType,
+    };
+    const errors = validationResult(response);
+    if (!errors.isEmpty()) {
+      responeInstance.error422(
+        res,
+        jsonInstance.jsonNoData({ errors: errors.array() })
+      );
+      return;
+    }
+    try {
+      if (response.name && response.path && response.updateType && response.idDeviceType) {
+           await groupService.createGroup(response.name,response.path,response.updateType,response.idDeviceType)
+          .then(async (group) => {
+            console.log("GROUP "+ group);
+            await devicetypeService
+              .addGroup(group, response.idDeviceType)
+              .then((group) => {
+                responeInstance.success200(
+                  res,
+                  jsonInstance.toJsonWithData(`create successfully`, group)
+                );
+              });
+          })
+          .catch((err) => {
+            responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+          });
+      } else {
+        responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
+      }
+    } catch (error) {
+      responeInstance.error400(res, jsonInstance.jsonNoData(error));
     }
   }
 }

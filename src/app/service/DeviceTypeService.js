@@ -42,8 +42,8 @@ class DeviceTyeService {
     return await deviceTypeModel
       .findOne({ name: name })
       .exec()
-      .then(async (user) => {
-        if (user != null) {
+      .then(async (service) => {
+        if (service != null) {
           throw new Error(`deviceType is exists`);
         }
         try {
@@ -66,7 +66,6 @@ class DeviceTyeService {
         if (devicetype == null) {
           throw new Error(`invalid Device Type`);
         }
-
         try {
           devicetype.versions.push(version);
           let result = await devicetype.save();
@@ -78,6 +77,50 @@ class DeviceTyeService {
       .catch((err) => {
         throw new Error(err.message);
       });
+  }
+  async addGroup(group, idDeviceType) {
+    return await deviceTypeModel
+    .findById(idDeviceType)
+    .exec()
+    .then(async (devicetype) => {
+      if (devicetype == null) {
+        throw new Error(`invalid Device Type`);
+      }
+      try {
+        // const dt = await devicetype.groups.filter((group) => group.name == group.name)
+        // console.log(dt);
+        console.log("ID DEVICETYPE "+idDeviceType);
+        console.log(devicetype);
+        devicetype.groups.push(group);
+        let result = await devicetype.save();
+        return result;
+      } catch (err) {
+        throw new Error("ROOR" +err.message);
+      }
+    })
+    .catch((err) => {
+      throw new Error(err.message);
+    });
+  }
+  async addDevice(device,idDeviceType){
+    return await deviceTypeModel
+    .findById(idDeviceType)
+    .exec()
+    .then(async (devicetype) => {
+      if (devicetype == null) {
+        throw new Error(`invalid Device Type`);
+      }
+      try {
+        devicetype.versions.push(device);
+        let result = await devicetype.save();
+        return result;
+      } catch (err) {
+        throw new Error(err.message);
+      }
+    })
+    .catch((err) => {
+      throw new Error(err.message);
+    });
   }
   async deleteDeviceType(idDeviceType) {
     console.log(idDeviceType);

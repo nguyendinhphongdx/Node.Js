@@ -57,11 +57,14 @@ class SaltStackController {
     await saltService
       .getMinionns()
       .then(async (data) => {
-        console.log("DATA" + data);
-
+        console.log("DATA" + data[0]);
+      
+      const filter = data.forEach(key => {
+          console.log("Key "+ key);
+      })
         responeInstance.success200(
           res,
-          jsonInstance.toJsonWithData(`SUCCESS`, data)
+          jsonInstance.toJsonWithData(`SUCCESS`, data[0])
         );
         // for (let i = 0; i < data.length; i++)
         //   {

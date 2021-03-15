@@ -3,7 +3,6 @@ const Schema = mongosee.Schema;
 const Gateway = require("./SmsGateway");
 const Alert  = require("./Alert");
 const User = require("./User");
-const Licence = require("./Licence");
 const Version = require("./Version");
 const Device = require("./Device");
 
@@ -18,10 +17,10 @@ const GroupDevice = new Schema({
   currentVersion:{type:[Version.schema],default:[]},
   smsGateway:{type:[Gateway.schema],default:[]},
   user: {type:[User.schema],default:[]},
-  ipAdress:{type: String},
   alert:{type: [Alert.schema],default:[]},
   path:{type: String },
-  deviceType:{type:[Device.schema],default:[]},
+  devices:{type: [Device.schema],default:[]},
+  idDeviceType:{type: String},
   createAt: { type: Number, default: Date.now().valueOf() },
   updateAt: { type: Number, default: Date.now().valueOf() },
 });

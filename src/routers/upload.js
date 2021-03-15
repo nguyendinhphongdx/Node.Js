@@ -31,9 +31,8 @@ router.post(
 
 router.use("/ftp",express.static("public"),serveIndex("public", { icons: true }));
 
-router.use("/:filename", (req, res) => {
-  const path = `${process.cwd()}/public/${req.params.filename}`;
-  console.log(path);
+router.use("/public/:folder/:filename", (req, res) => {
+  const path = `${process.cwd()}/public/${req.params.folder}/${req.params.filename}`;
   res.download(path);
 });
 
