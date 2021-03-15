@@ -35,7 +35,6 @@ router.use("/public/:folder/:filename", (req, res) => {
   const path = `${process.cwd()}/public/${req.params.folder}/${req.params.filename}`;
   res.download(path);
 });
-
 router.post("/config",uploadController.multipleUpload)
 
 module.exports = router;

@@ -10,7 +10,6 @@ var storage = multer.diskStorage({
     cb(null, file.fieldname + '-' + Date.now())
   }
 })
-
 router.post('/login', authenRouter.login);
 router.post('/logout/:id', authenRouter.logout);
 router.get('/secure',verifyToken,authenRouter.secure)

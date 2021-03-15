@@ -10,6 +10,7 @@ const DeviceType = require("../app/models/DeviceType");
 const Version = require("../app/models/Version");
 var storage = multer.diskStorage({
     destination: async(req, file, cb) => {
+        console.log(req);
         const _deviceType = await DeviceType.findById(req.params.idDeviceType);
         const nameFolder = _deviceType.name;
         const res =  _deviceType.versions.some(version => version.versionName == req.body.versionName);
