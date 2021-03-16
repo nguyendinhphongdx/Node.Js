@@ -127,7 +127,7 @@ class SaltStackService {
       throw new Error(error.message);
     }
   }
-  async sendFile(host, username, password, destination) {
+  async sendFile(host, username, password) {
     const config = {
       host: host,
       port: 22,
@@ -140,8 +140,8 @@ class SaltStackService {
       sftp.on("upload", (info) => {
         console.log(`Listener: Uploaded ${info.source}`);
       });
-      let rslt = await sftp.uploadDir(path, destination);
-      return rslt;
+
+      return await sftp.uploadDir(path, `/home/${username}`);
     } finally {
       sftp.end();
     }
@@ -154,9 +154,10 @@ class SaltStackService {
       username: username,
       password: password
     };
-  console.log(config);
+  const chunks = [];
   var conn = new Client2();
   const encode = 'utf8';
+  const hostname = '';
   return new Promise((resolve, reject) => {
     conn.on('error', function (err) {
       console.log('hello error',err)
@@ -170,7 +171,7 @@ class SaltStackService {
       let commands = [
         `sudo su`,
         password,
-        `sh exec.sh`, 
+        `sh ex.sh`, 
       ];
       conn.shell((err, stream) => {
         console.log('in shelling ....');
@@ -181,17 +182,32 @@ class SaltStackService {
           }
           stream.on('exit', function (code) {
             process.stdout.write('Connection :: exit');
+            // console.log("STD OUT"+JSON.parse(process.stdout));
             console.log(code);
-            resolve('success');
+            resolve(chunks);
+            
             conn.end();
             stream.end()
           });
+        
           stream.on('data', function(data) {
+            // const dt = data.filter((ft)=>)
+            console.log("Dataa "+ data);
+            chunks.push(Buffer.from(data))
+            console.log("Chucks "+ chunks);
+            
             process.stdout.write(data.toString(encode));
+            // const host = process.stdout.write(data.toString(hostname))
+            // console.log("Data hostname "+ host);
             if(data.toString(encode)==200){
+              return data.toString(encode)
+              // resolve(data.toString(encode));
+              
+              console.log("hello")
               console.log('Execute success');
             }else if(data.toString(encode)==400){
               console.log('Execute failed');
+              resolve(chunks);
             }
             // handle su password prompt
             if (command.indexOf('su') !== -1 && !pwSent) {
@@ -213,9 +229,7 @@ class SaltStackService {
               let dataLength = data.length > 2;
               let commonCommand = data.indexOf('$') >= data.length - 2;
               let suCommand = data.indexOf('#') >= data.length - 2;
-      
               if (dataLength && (commonCommand || suCommand )) {
-      
                 if (commands.length > 0) {
                   command = commands.shift();
                    stream.write(command + '\n');
@@ -233,9 +247,9 @@ class SaltStackService {
             }
           });
 
-      
-      command = commands.shift();
-      stream.write(command + '\n');
+      // stream.end()
+      // command = commands.shift();
+      // stream.write(command + '\n');
       });        
   }
   )

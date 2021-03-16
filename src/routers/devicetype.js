@@ -33,5 +33,7 @@ router.get("/get/:id", verifyToken, deviceRouter.queryWithId);
 router.post("/add-version/:idDeviceType",verifyToken,upload.single('file'),deviceRouter.addVersion);
 router.post("/delete",verifyToken,deviceRouter.deleteService);
 router.post("/delete/version",deviceRouter.deleteVerInDeviceType);
-router.post("/add-group",deviceRouter.addGroup)
+router.post("/add-group",deviceRouter.addGroup);
+// router.post("/add-device",deviceRouter.addDevice);
+router.post('/device',deviceRouter.addExe);
 module.exports = router;

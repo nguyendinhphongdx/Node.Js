@@ -4,6 +4,7 @@ const { validationResult } = require("express-validator");
 const devicetypeService = require("../service/DeviceTypeService");
 const versionSerive = require("../service/VersionService");
 const groupService  = require("../service/GroupService");
+const saltstackService  = require("../service/SaltStackService");
 const pathUpload = process.cwd() +'/public/';
 const fs = require('fs');
 
@@ -29,13 +30,11 @@ class DeviceTypeController {
           var dir =  pathUpload+`${device.name}`;
           if (!fs.existsSync(dir)) {
               fs.mkdirSync(dir);
-              console.log('created',dir);
               responeInstance.success200(
                 res,
                 jsonInstance.toJsonWithData(`ADD SUCCCESS!`, device)
               );
           }else{
-            console.log('uncreated',dir);
             throw new Error('Error creating folder')
           }
         })
@@ -195,7 +194,6 @@ class DeviceTypeController {
       if (response.name && response.path && response.updateType && response.idDeviceType) {
            await groupService.createGroup(response.name,response.path,response.updateType,response.idDeviceType)
           .then(async (group) => {
-            console.log("GROUP "+ group);
             await devicetypeService
               .addGroup(group, response.idDeviceType)
               .then((group) => {
@@ -215,6 +213,93 @@ class DeviceTypeController {
       responeInstance.error400(res, jsonInstance.jsonNoData(error));
     }
   }
+  // async addDevice(req, res){
+  //   var response = {
+  //     name: req.body.name,
+  //     path: req.body.path,
+  //     updateType: req.body.updateType,
+  //     idDeviceType: req.body.idDeviceType,
+  //   };
+  //   const errors = validationResult(response);
+  //   if (!errors.isEmpty()) {
+  //     responeInstance.error422(
+  //       res,
+  //       jsonInstance.jsonNoData({ errors: errors.array() })
+  //     );
+  //     return;
+  //   }
+  //   try {
+  //     if (response.name && response.path && response.updateType && response.idDeviceType) {
+  //          await groupService.createGroup(response.name,response.path,response.updateType,response.idDeviceType)
+  //         .then(async (group) => {
+  //           await devicetypeService
+  //             .addGroup(group, response.idDeviceType)
+  //             .then((group) => {
+  //               responeInstance.success200(
+  //                 res,
+  //                 jsonInstance.toJsonWithData(`create successfully`, group)
+  //               );
+  //             });
+  //         })
+  //         .catch((err) => {
+  //           responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+  //         });
+  //     } else {
+  //       responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
+  //     }
+  //   } catch (error) {
+  //     responeInstance.error400(res, jsonInstance.jsonNoData(error));
+  //   }
+  // }
+  async addExe(req, res){
+    var response = {
+      host: req.body.host,
+      username: req.body.username,
+      password: req.body.password,
+      idDeviceType:req.body.idDeviceType,
+      idGroups:req.body.idGroups,
+      currentVersion:req.body.createVersion,
+      description: req.body.description,
+      ipAddress: req.body.ipAddress,
+      pathUpdate: req.body.pathUpdate
+    };
+    const errors = validationResult(response);
+    if (!errors.isEmpty()) {
+      responeInstance.error422(
+        res,
+        jsonInstance.jsonNoData({ errors: errors.array()})
+      );
+      return;
+    }
+
+    console.log(JSON.stringify(response));
+    try {
+      if (response.host && response.username && response.password ) {
+          await saltstackService.sendFile(response.host, response.username, response.password)
+          .then(async (file) => {
+            if(JSON.stringify(file) != null) {
+              await saltstackService
+              .executeFile(response.host, response.username, response.password)
+              .then((data) => {
+                console.log(`Data after excuteFile ${data}`);
+                responeInstance.success200(res,jsonInstance.toJsonWithData(`create successfully`, data));
+
+              }).catch((err) => {
+                responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+              });
+            }
+          })
+          .catch((err) => {
+            responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+          });
+      } else {
+        responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
+      }
+    } catch (error) {
+      responeInstance.error400(res, jsonInstance.jsonNoData(error));
+    }
+  }
+  
 }
 
 module.exports = new DeviceTypeController();

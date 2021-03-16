@@ -1,21 +1,13 @@
 const mongoose = require("mongoose");
 const FileType = require("./FileType");
 const Device = new mongoose.Schema({
+  nameDevice:{type:String},
   idDeviceType: { type:String},
-  versionName: { type: String },
-  typeFile: { type: String },
-  totalSize: { type: Number },
+  idGroups: { type:String  },
+  currentVersion: { type: String },
   description: { type: String },
-  idDeviceType:{type:String},
-  fieldname: { type:String},
-  originalname: { type:String },
-  encoding: { type: String },
-  minetype: { type:String},
-  destination: { type: String },
-  filename: { type: String },
-  path: { type: String },
-  size: { type: Number},
-  // fileType:{type:[FileType.schema],default:[]},
+  ipAddress: { type: String},
+  pathUpdate: { type: String },
   createAt: { type: Number, default: Date.now().valueOf() },
   updateAt: { type: Number, default: Date.now().valueOf() },
 });

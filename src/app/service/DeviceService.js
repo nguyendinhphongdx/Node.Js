@@ -1,36 +1,37 @@
 const groupModel = require("../models/GroupDevice");
 const device  = require("../models/Device");
 class DeviceService {
+  GET
+  async queryAllDevice() {
+    return await groupModel
+      .find({})
+      .exec()
+      .then((devicetype) => {
+        if (devicetype == null) {
+          throw new Error("query device Type error");
+        }
+        return devicetype;
+      })
+      .catch((err) => {
+        throw new Error(err.message);
+      });
+  }
   //GET
-//   async queryAllGroup() {
-//     return await groupModel
-//       .find({})
-//       .exec()
-//       .then((devicetype) => {
-//         if (devicetype == null) {
-//           throw new Error("query device Type error");
-//         }
-//         return devicetype;
-//       })
-//       .catch((err) => {
-//         throw new Error(err.message);
-//       });
-//   }
-//   //GET
-//   async queryWithId(id) {
-//     return await groupModel
-//       .findById(id)
-//       .exec()
-//       .then((device) => {
-//         if (device == null) {
-//           throw new Error("invalid deviceType");
-//         }
-//         return device;
-//       })
-//       .catch((err) => {
-//         throw new Error(err.message);
-//       });
-//   }
+  async queryWithId(id) {
+    return await groupModel
+      .findById(id)
+      .exec()
+      .then((device) => {
+        if (device == null) {
+          throw new Error("invalid Device");
+        }
+        return device;
+      })
+      .catch((err) => {
+        throw new Error(err.message);
+      });
+  }
+
 
 //   POST
 //   async createGroup(name, path,typeUpdate) {
@@ -58,22 +59,24 @@ class DeviceService {
 //         throw new Error(err.message);
 //       });
 //   }
-async createVersion(host,description,fieldname) {
+
+async createDevice(nameDevice, idDeviceType, idGroups, currentVersion ,description, ipAddress,pathUpdate) {
   var newDevice = new device();
-  newDevice.devic
-  VEW.versionName = versionName
-  newVersion.description = description
-  newVersion.fieldname  = fieldname
-  return await versionModel.findOne({ versionName: versionName })
+  newDevice.nameDevice = nameDevice
+  newDevice.idDeviceType = idDeviceType
+  newDevice.idGroups = idGroups
+  newDevice.currentVersion = currentVersion
+  newDevice.description = description
+  newDevice.ipAddress = ipAddress
+  newDevice.pathUpdate = pathUpdate
+  return await device.findOne({ ipAddress: ipAddress })
     .exec()
-    .then(async (version) => {
-      if (version != null) {
-        throw new Error(`version is exists`)
+    .then(async (deivce) => {
+      if (deivce != null) {
+        throw new Error(`Device is exists`)
       }
       try {
-        let result = await newVersion.save();
-        console.log(`create version =${result}`)
-        return result
+        return await newDevice.save();
       } catch (err) {
         throw new Error(err.message)
       }
@@ -81,7 +84,7 @@ async createVersion(host,description,fieldname) {
     .catch((err) => {
       throw new Error(err.message)
     })
-}
+  }
 }
 
 module.exports = new DeviceService();

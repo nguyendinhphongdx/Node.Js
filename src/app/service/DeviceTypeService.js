@@ -33,6 +33,15 @@ class DeviceTyeService {
         throw new Error(err.message);
       });
   }
+  //GET
+  async query(id) {
+    return await deviceTypeModel.findById(id).populate({
+      path: "devices",
+      populate: {
+        path: "groups",
+      },
+    });
+  }
 
   //POST
   async createDeviceType(name, description) {
@@ -151,8 +160,7 @@ class DeviceTyeService {
         if (device == null) {
           throw new Error(`invalid device`);
         }
-        const version = await device.versions.filter((version) =>version._id == idVersion);
-        console.log(version);
+        // const version = await device.versions.filter((version) =>version._id == idVersion);
         try {
           await deviceTypeModel.updateOne({},{$pull:{"versions":{"_id":idVersion}}},{multi:true})
           let result = await device.save();
@@ -165,6 +173,7 @@ class DeviceTyeService {
         throw new Error(err.message);
       });
   }
+
 }
 
 module.exports = new DeviceTyeService();

@@ -20,6 +20,7 @@ function route(app) {
   app.use("/group",group);
   app.use('/version',versionRouter);
   app.use('/ssh',sshRouter);
+  app.use('/device',device);
   // app.use('/devices',device);
   // app.use('/reports', reports);
   // app.use('/loggings',loggoings);

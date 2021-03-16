@@ -6,6 +6,7 @@ const devicetypeService = require("../service/DeviceTypeService");
 const { authuShema } = require("../validate/authenSchema");
 const createError = require("http-errors");
 const versionSerive = require("../service/VersionService");
+const deviceService = require("../service/DeviceService");
 class DeviceController {
 //   //POST
 //   async createDevice(req, res) {
@@ -65,62 +66,42 @@ class DeviceController {
 //       responeInstance.error400(res, jsonInstance.jsonNoData(`URL ERROR`));
 //     }
 //   }
-//   async addDevice(req, res) {
-//     // const { versionName, description, idDeviceType } = req.body;
-    
-//     var response = {
-//       deviceName: req.body.deviceName,
-//       description: req.body.description,
-//       idDeviceType: req.body.idDeviceType,
-//       fieldname: req.file.fieldname,
-//       originalname: req.file.originalname,
-//       encoding: req.file.encoding,
-//       minetype: req.file.minetype,
-//       destination: req.file.destination,
-//       filename: req.file.filename,
-//       path: req.file.path,
-//       size: req.file.size,
-//     };
+//nameDevice, idDeviceType, idGroups, currentVersion ,description, ipAddress
+  async addDevice(req, res) {
+    var response = {
+      nameDevice: req.body.nameDevice,
+      idDeviceType: req.body.idDeviceType,
+      idGroups: req.body.idGroups,
+      currentVersion: req.body.currentVersion,
+      description: req.body.description,
+      ipAddress: req.body.ipAddress,
+      pathUpdate: req.body.pathUpdate
+    };
 
-//     if (
-//       response.versionName &&
-//       response.description &&
-//       response.idDeviceType
-//     ) {
-//       console.log(`fileName ${response.filename}`);
-    
-//       await versionSerive
-//         .createVersion(
-//           response.versionName,
-//           response.description,
-//           response.fieldname,
-//           response.originalname,
-//           response.encoding,
-//           response.minetype,
-//           response.destination,
-//           response.filename,
-//           response.path,
-//           response.size
-//         )
-//         .then(async (device) => {
-//           console.log(`create version =${device}`);
-//           await devicetypeService
-//             .addVersion(device, response.idDeviceType)
-//             .then((version) => {
-//               responeInstance.success200(
-//                 res,
-//                 jsonInstance.toJsonWithData(`create successfully`, version)
-//               );
-//             });
-//           console.log(`Result data = ${res}`);
-//         })
-//         .catch((err) => {
-//           responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
-//         });
-//     } else {
-//       responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
-//     }
-//   }
+    if (response.nameDevice && response.ipAddress) {
+      console.log(`Name Device ${response.nameDevice}`);
+      await deviceService
+        .createDevice(
+          response.nameDevice,
+          response.idDeviceType,
+          response.idGroups,
+          response.currentVersion,
+          response.description,
+          response.ipAddress,
+          response.pathUpdate,
+        )
+        .then(async (device) => {
+            responeInstance.success200(res,
+                jsonInstance.toJsonWithData(`create device successfully`, device)
+              );
+        })
+        .catch((err) => {
+          responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+        });
+    } else {
+      responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
+    }
+  }
 }
 
 module.exports = new DeviceController();
