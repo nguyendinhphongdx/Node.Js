@@ -18,6 +18,7 @@ router.get('/minions',saltrouter.getMinions);
 router.post('/keys/all',saltrouter.funcKeys);
 router.get('/history',saltrouter.history);
 router.get('/history/:jid',saltrouter.detailHistory);
+router.get('/name-device',saltrouter.getDeviceName);
 router.post('/sendfile',saltrouter.sendFile);
 router.post('/execute',saltrouter.execute);
 // router.post('initDevice',saltrouter.)

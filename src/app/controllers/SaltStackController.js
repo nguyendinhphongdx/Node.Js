@@ -125,6 +125,18 @@ class SaltStackController {
       );
     }
   }
+//GET
+    async getDeviceName(req, res) {
+      const result = await saltService.getDeviceName();
+      if (result == null) {
+        responeInstance.error400(res, jsonInstance.jsonNoData(`get error`));
+      } else {
+        responeInstance.success200(
+          res,
+          jsonInstance.toJsonWithData(`Get Name Device Successfully`, result)
+        );
+      }
+    }
   //POST
   async sendFile(req, res) {
     var respone = {

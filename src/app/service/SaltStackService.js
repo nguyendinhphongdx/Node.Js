@@ -75,7 +75,7 @@ class SaltStackService {
         headers: { "X-Auth-Token": token },
         contentType: "application/json",
       });
-      console.log("data "+ res.data.return[0]);
+      console.log("data " + res.data.return[0]);
       return Object.entries(res.data.return[0]);
     } catch (error) {
       console.log("error Service" + error.message);
@@ -146,115 +146,99 @@ class SaltStackService {
       sftp.end();
     }
   }
+  async getDeviceName() {
+    const token = await saltApi.initToken();
+    try {
+      const res = await axios.get(`${Constants.BASE_URL}/keys`, {
+        headers: { "X-Auth-Token": token },
+        contentType: "application/json",
+      });
+      console.log("Device Name "+ res.data.return.minions_pre);
+      return res.data.return.minions_pre.toString();
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
 
   async executeFile(host, username, password) {
     const config = {
       host: host,
       port: 22,
       username: username,
-      password: password
+      password: password,
     };
-  const chunks = [];
-  var conn = new Client2();
-  const encode = 'utf8';
-  const hostname = '';
-  return new Promise((resolve, reject) => {
-    conn.on('error', function (err) {
-      console.log('hello error',err)
-      reject(err);
-    });
-    conn.on('ready',function(){
-      let password = config.password;
-      let command = '';
-      let pwSent = false;
-      let su = false;
-      let commands = [
-        `sudo su`,
-        password,
-        `sh ex.sh`, 
-      ];
-      conn.shell((err, stream) => {
-        console.log('in shelling ....');
-          if (err) {
-            console.log('error in ready',err.message);
-            conn.end();
-            reject('failed');
-          }
-          stream.on('exit', function (code) {
-            process.stdout.write('Connection :: exit');
-            // console.log("STD OUT"+JSON.parse(process.stdout));
-            console.log(code);
-            resolve(chunks);
-            
-            conn.end();
-            stream.end()
-          });
-        
-          stream.on('data', function(data) {
-            // const dt = data.filter((ft)=>)
-            console.log("Dataa "+ data);
-            chunks.push(Buffer.from(data))
-            console.log("Chucks "+ chunks);
-            
-            process.stdout.write(data.toString(encode));
-            // const host = process.stdout.write(data.toString(hostname))
-            // console.log("Data hostname "+ host);
-            if(data.toString(encode)==200){
-              return data.toString(encode)
-              // resolve(data.toString(encode));
-              
-              console.log("hello")
-              console.log('Execute success');
-            }else if(data.toString(encode)==400){
-              console.log('Execute failed');
-              resolve(chunks);
+    var conn = new Client2();
+    const encode = "utf8";
+    return new Promise((resolve, reject) => {
+      conn.on("error", function (err) {
+        reject(err);
+      });
+      conn
+        .on("ready", function () {
+          let password = config.password;
+          let command = "";
+          let pwSent = false;
+          let su = false;
+          let dataString = "";
+          let commands = [`sudo -s`, password, `sh ex.sh`];
+          conn.shell((err, stream) => {
+            console.log("in shelling ....");
+            if (err) {
+              console.log("error in ready", err.message);
+              conn.end();
+              reject("failed");
             }
-            // handle su password prompt
-            if (command.indexOf('su') !== -1 && !pwSent) {
-               /*
-               * if su has been sent a data event is triggered but the
-               * first event is not the password prompt, this will ignore the
-               * first event and only respond when the prompt is asking
-               * for the password
-               */
-               if (command.indexOf('su') > -1) {
+            stream.on("exit", function (code) {
+              process.stdout.write("Connection :: exit");
+              if(code === 0) {
+                resolve(dataString);
+                conn.end();
+              }
+              conn.end();
+            });
+            stream.on("data", function (data) {
+              process.stdout.write(data.toString(encode));
+
+              if (data.toString(encode) == 200) {
+                dataString = data.toString();
+                // return data.toString(encode)
+                resolve(data.toString(encode));
+              } else if (data.toString(encode) == 400) {
+                resolve(data.toString(encode));
+              }
+              if (command.indexOf("su") !== -1 && !pwSent) {
+                if (command.indexOf("su") > -1) {
                   su = true;
-               }
-               if (data.indexOf(':') >= data.length - 2) {
+                }
+                if (data.indexOf(":") >= data.length - 2) {
                   pwSent = true;
-                  stream.write(password + '\n');
-               }
-            } else {
-              // detect the right condition to send the next command
-              let dataLength = data.length > 2;
-              let commonCommand = data.indexOf('$') >= data.length - 2;
-              let suCommand = data.indexOf('#') >= data.length - 2;
-              if (dataLength && (commonCommand || suCommand )) {
-                if (commands.length > 0) {
-                  command = commands.shift();
-                   stream.write(command + '\n');
-                   
-                } else {
-                  // su requires two exit commands to close the session
-                  if (su) {
-                     su = false;
-                     stream.write('exit\n');
+                  stream.write(password + "\n");
+                }
+              } else {
+                let dataLength = data.length > 2;
+                let commonCommand = data.indexOf("$") >= data.length - 2;
+                let suCommand = data.indexOf("#") >= data.length - 2;
+                if (dataLength && (commonCommand || suCommand)) {
+                  if (commands.length > 0) {
+                    command = commands.shift();
+                    stream.write(command + "\n");
                   } else {
-                     stream.end('exit\n');
+                    if (su) {
+                      su = false;
+                      stream.write("exit\n");
+                    } else {
+                      stream.end("exit\n");
+                    }
                   }
                 }
               }
-            }
+            });
+            command = commands.shift();
+            stream.write(command + "\n");
           });
-
-      // stream.end()
-      // command = commands.shift();
-      // stream.write(command + '\n');
-      });        
+        })
+        .connect(config);
+    });
   }
-  )
-  .connect(config)
-  })
-}
 }
 module.exports = new SaltStackService();

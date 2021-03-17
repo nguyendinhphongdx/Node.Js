@@ -3,10 +3,11 @@ const responeInstance = require("../utils/ResponeUtils");
 const { validationResult } = require("express-validator");
 const devicetypeService = require("../service/DeviceTypeService");
 const versionSerive = require("../service/VersionService");
-const groupService  = require("../service/GroupService");
-const saltstackService  = require("../service/SaltStackService");
-const pathUpload = process.cwd() +'/public/';
-const fs = require('fs');
+const groupService = require("../service/GroupService");
+const saltstackService = require("../service/SaltStackService");
+const deviceService = require("../service/DeviceService");
+const pathUpload = process.cwd() + "/public/";
+const fs = require("fs");
 
 class DeviceTypeController {
   //POST
@@ -27,15 +28,15 @@ class DeviceTypeController {
       await devicetypeService
         .createDeviceType(respone.name, respone.description)
         .then((device) => {
-          var dir =  pathUpload+`${device.name}`;
+          var dir = pathUpload + `${device.name}`;
           if (!fs.existsSync(dir)) {
-              fs.mkdirSync(dir);
-              responeInstance.success200(
-                res,
-                jsonInstance.toJsonWithData(`ADD SUCCCESS!`, device)
-              );
-          }else{
-            throw new Error('Error creating folder')
+            fs.mkdirSync(dir);
+            responeInstance.success200(
+              res,
+              jsonInstance.toJsonWithData(`ADD SUCCCESS!`, device)
+            );
+          } else {
+            throw new Error("Error creating folder");
           }
         })
         .catch((err) => {
@@ -77,7 +78,7 @@ class DeviceTypeController {
       responeInstance.error400(res, jsonInstance.jsonNoData(`URL ERROR`));
     }
   }
-  async addVersion(req, res,next) {
+  async addVersion(req, res, next) {
     var response = {
       versionName: req.body.versionName,
       description: req.body.description,
@@ -100,8 +101,13 @@ class DeviceTypeController {
       return;
     }
     try {
-      if (response.versionName && response.description && response.idDeviceType) {
-           await versionSerive.createVersion(
+      if (
+        response.versionName &&
+        response.description &&
+        response.idDeviceType
+      ) {
+        await versionSerive
+          .createVersion(
             response.versionName,
             response.description,
             response.fieldname,
@@ -111,7 +117,8 @@ class DeviceTypeController {
             response.destination,
             response.filename,
             response.path,
-            response.size)
+            response.size
+          )
           .then(async (device) => {
             await devicetypeService
               .addVersion(device, response.idDeviceType)
@@ -158,24 +165,26 @@ class DeviceTypeController {
       idVersion: req.body.idVersion,
     };
     if (response.idDeviceType != null) {
-      await devicetypeService.deleteVersion(response.idDeviceType, response.idVersion)
-      .then(async (data) => {
-        await versionSerive.deleteVersion(response.idVersion)
-          .then((result) => {
-            responeInstance.success200(
-              res,
-              jsonInstance.toJsonWithData(`delete success`, result)
-            )
-          })
-      })
-      .catch((err) => {
-        responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
-      });
+      await devicetypeService
+        .deleteVersion(response.idDeviceType, response.idVersion)
+        .then(async (data) => {
+          await versionSerive
+            .deleteVersion(response.idVersion)
+            .then((result) => {
+              responeInstance.success200(
+                res,
+                jsonInstance.toJsonWithData(`delete success`, result)
+              );
+            });
+        })
+        .catch((err) => {
+          responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
+        });
     } else {
       responeInstance.error400(res, jsonInstance.jsonNoData(`URL ERROR`));
     }
   }
-  async addGroup(req, res){
+  async addGroup(req, res) {
     var response = {
       name: req.body.name,
       path: req.body.path,
@@ -191,8 +200,19 @@ class DeviceTypeController {
       return;
     }
     try {
-      if (response.name && response.path && response.updateType && response.idDeviceType) {
-           await groupService.createGroup(response.name,response.path,response.updateType,response.idDeviceType)
+      if (
+        response.name &&
+        response.path &&
+        response.updateType &&
+        response.idDeviceType
+      ) {
+        await groupService
+          .createGroup(
+            response.name,
+            response.path,
+            response.updateType,
+            response.idDeviceType
+          )
           .then(async (group) => {
             await devicetypeService
               .addGroup(group, response.idDeviceType)
@@ -251,55 +271,56 @@ class DeviceTypeController {
   //     responeInstance.error400(res, jsonInstance.jsonNoData(error));
   //   }
   // }
-  async addExe(req, res){
+ 
+  async addDevice(req, res) {
     var response = {
       host: req.body.host,
       username: req.body.username,
       password: req.body.password,
-      idDeviceType:req.body.idDeviceType,
-      idGroups:req.body.idGroups,
-      currentVersion:req.body.createVersion,
+      idDeviceType: req.body.idDeviceType,
+      idGroups: req.body.idGroups,
+      currentVersion: req.body.createVersion,
       description: req.body.description,
-      ipAddress: req.body.ipAddress,
-      pathUpdate: req.body.pathUpdate
+      pathUpdate: req.body.pathUpdate,
     };
     const errors = validationResult(response);
     if (!errors.isEmpty()) {
       responeInstance.error422(
         res,
-        jsonInstance.jsonNoData({ errors: errors.array()})
+        jsonInstance.jsonNoData({ errors: errors.array() })
       );
       return;
     }
-
-    console.log(JSON.stringify(response));
     try {
-      if (response.host && response.username && response.password ) {
-          await saltstackService.sendFile(response.host, response.username, response.password)
-          .then(async (file) => {
-            if(JSON.stringify(file) != null) {
-              await saltstackService
-              .executeFile(response.host, response.username, response.password)
-              .then((data) => {
-                console.log(`Data after excuteFile ${data}`);
-                responeInstance.success200(res,jsonInstance.toJsonWithData(`create successfully`, data));
-
-              }).catch((err) => {
-                responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
-              });
-            }
+      if (response.host && response.username && response.password) {
+        await saltstackService.sendFile(response.host, response.username, response.password)
+        .then(async (file) => {
+          await saltstackService.executeFile(response.host, response.username,response.password)
+          .then(async(executeFile) => {
+              await saltstackService.getDeviceName()
+              .then(async (deviceName) => {
+                await deviceService.createDevice(deviceName, response.idDeviceType, response.idGroups, response.currentVersion, response.description, response.host, response.pathUpdate)
+                .then(async (device) => {
+                   responeInstance.success200(res,jsonInstance.toJsonWithData(`create successfully`, device));
+                   res.end();
+                })
+              })
+              .catch(error => {
+                throw new Error('Create Device Fail')
+              })
           })
-          .catch((err) => {
-            responeInstance.error400(res, jsonInstance.jsonNoData(err.message));
-          });
-      } else {
-        responeInstance.error400(res, jsonInstance.jsonNoData(`url error`));
+          .catch(error => {
+            throw new Error('Execute file failed')
+          })
+        }).catch(err => {
+          throw new Error('File Error')
+        })
       }
     } catch (error) {
-      responeInstance.error400(res, jsonInstance.jsonNoData(error));
+      throw new Error('System Fail')
     }
+
   }
-  
 }
 
 module.exports = new DeviceTypeController();
