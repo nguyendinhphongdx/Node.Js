@@ -1,7 +1,7 @@
 const groupModel = require("../models/GroupDevice");
 const device  = require("../models/Device");
 class DeviceService {
-  GET
+  //GET
   async queryAllDevice() {
     return await groupModel
       .find({})

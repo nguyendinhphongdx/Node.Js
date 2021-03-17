@@ -1,7 +1,9 @@
 const groupModel = require("../models/GroupDevice");
 const DeviceType = require("../models/DeviceType");
+// require("babel-core/register");
+// require("babel-polyfill");
 class GroupService {
-  GET
+  //GET
   async queryAllGroup() {
     return await groupModel
       .find({})
